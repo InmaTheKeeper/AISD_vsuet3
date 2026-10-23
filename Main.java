@@ -1,14 +1,16 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
 
     private static Integer best = null;
+    private static int[] bestCombo = null;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Ввод лимита
         System.out.println("Введите лимит км:");
         int limit;
         try {
@@ -18,7 +20,6 @@ public class Main {
             return;
         }
 
-        // Ввод k
         System.out.println("Введите количество городов для посещения:");
         int k;
         try {
@@ -28,7 +29,6 @@ public class Main {
             return;
         }
 
-        // Ввод списка городов
         System.out.println("Введите расстояния через запятую:");
         String line = scanner.nextLine().trim();
         if (line.isEmpty()) {
@@ -51,7 +51,12 @@ public class Main {
         if (result == null) {
             System.out.println("Нет подходящей комбинации.");
         } else {
+            List<Integer> chosen = new ArrayList<>();
+            for (int idx : bestCombo) {
+                chosen.add(cities[idx]);
+            }
             System.out.println("Максимальная сумма: " + result);
+            System.out.println("Города в комбинации: " + chosen);
         }
     }
 
@@ -60,22 +65,26 @@ public class Main {
             return null;
         }
         best = null;
-        combine(cities, k, 0, 0, 0, limit);
+        bestCombo = null;
+        int[] current = new int[k];
+        combine(cities, k, 0, 0, 0, limit, current);
         return best;
     }
 
-    // Рекурсивный перебор сочетаний
-    private static void combine(int[] cities, int k, int start, int count, int sum, int limit) {
-        if (sum > limit) return;            // уже превысили — дальше нет смысла
-        if (count == k) {                   // собрали ровно k городов
+    private static void combine(int[] cities, int k, int start, int count,
+                                int sum, int limit, int[] current) {
+        if (sum > limit) return;
+        if (count == k) {
+            // Нашли новую лучшую комбинацию — запоминаем её индексы
             if (best == null || sum > best) {
                 best = sum;
+                bestCombo = Arrays.copyOf(current, current.length);
             }
             return;
         }
-        // Ограничиваем цикл: нужно ещё k - count городов после текущего
         for (int i = start; i <= cities.length - (k - count); i++) {
-            combine(cities, k, i + 1, count + 1, sum + cities[i], limit);
+            current[count] = i;                     // запомнили индекс
+            combine(cities, k, i + 1, count + 1, sum + cities[i], limit, current);
         }
     }
 }
